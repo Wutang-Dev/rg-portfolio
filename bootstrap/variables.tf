@@ -19,4 +19,14 @@ variable "purpose" {
   type        = string
   default     = "RemoteState"
 }
+variable "website_bucket_name" {
+  description = "S3 bucket used for portfolio website deployments"
+  type        = string
+  default     = "rg-infrastructure-portfolio-site-345471468677-eu-north-1"
+}
 
+variable "cloudfront_distribution_id" {
+  description = "CloudFront distribution used for the portfolio"
+  type        = string
+  default     = "E2RH4R4DH0Q5GE"
+}

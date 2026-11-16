@@ -31,3 +31,7 @@ output "infra_backend_config" {
     use_lockfile = true
   EOT
 }
+output "website_deploy_role_arn" {
+  description = "IAM role assumed by the website deployment workflow"
+  value       = aws_iam_role.website_deploy.arn
+}
