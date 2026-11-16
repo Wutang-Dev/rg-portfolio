@@ -1,0 +1,6 @@
+data "aws_caller_identity" "current" {}
+
+module "s3" {
+  source      = "./modules/s3"
+  bucket_name = "${var.project_name}-site-${data.aws_caller_identity.current.account_id}-${var.aws_region}"
+}
