@@ -76,4 +76,11 @@ resource "aws_s3_bucket_policy" "website" {
   bucket = module.s3.bucket_name
   policy = data.aws_iam_policy_document.website.json
 }
+module "route53" {
+  source = "./modules/route53"
 
+  hosted_zone_id         = data.aws_route53_zone.website.zone_id
+  domain_name            = var.portfolio_domain_name
+  cloudfront_domain_name = module.cloudfront.domain_name
+  cloudfront_zone_id     = module.cloudfront.hosted_zone_id
+}

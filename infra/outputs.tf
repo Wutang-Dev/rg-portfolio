@@ -23,3 +23,7 @@ output "cloudfront_domain_name" {
   description = "CloudFront distribution hostname"
   value       = module.cloudfront.domain_name
 }
+output "portfolio_url" {
+  description = "Portfolio website HTTPS URL"
+  value       = "https://${module.route53.website_fqdn}"
+}
