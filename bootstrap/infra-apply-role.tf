@@ -48,6 +48,7 @@ data "aws_iam_policy_document" "infra_apply_permissions" {
     sid = "UpdateWebsiteBucketConfiguration"
 
     actions = [
+      "s3:CreateBucket",
       "s3:PutBucketPolicy",
       "s3:DeleteBucketPolicy",
       "s3:PutBucketPublicAccessBlock",
