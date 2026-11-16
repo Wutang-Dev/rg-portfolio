@@ -35,3 +35,7 @@ output "website_deploy_role_arn" {
   description = "IAM role assumed by the website deployment workflow"
   value       = aws_iam_role.website_deploy.arn
 }
+output "infra_plan_role_arn" {
+  description = "IAM role assumed by infrastructure planning jobs"
+  value       = aws_iam_role.infra_plan.arn
+}
