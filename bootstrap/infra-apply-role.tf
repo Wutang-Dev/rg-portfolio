@@ -18,7 +18,7 @@ data "aws_iam_policy_document" "infra_apply_trust" {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:Wutang-Dev@256145436/rg-portfolio@1459128006:environment:production-infra"
+        "repo:Wutang-Dev@256145436/rg-portfolio@1459128006:ref:refs/heads/main"
       ]
     }
   }
