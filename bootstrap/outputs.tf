@@ -39,3 +39,7 @@ output "infra_plan_role_arn" {
   description = "IAM role assumed by infrastructure planning jobs"
   value       = aws_iam_role.infra_plan.arn
 }
+output "infra_apply_role_arn" {
+  description = "IAM role assumed by infrastructure apply jobs"
+  value       = aws_iam_role.infra_apply.arn
+}
