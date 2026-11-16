@@ -1,0 +1,132 @@
+name: Deploy Portfolio Website
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "site/**"
+      - ".github/workflows/website-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portfolio-website-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy and verify website
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      AWS_REGION: eu-north-1
+      AWS_PAGER: ""
+      WEBSITE_BUCKET: ${{ vars.WEBSITE_BUCKET_NAME }}
+      DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+      WEBSITE_URL: https://portfolio.rginfralabs.co.uk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Check configuration and website files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -n "$WEBSITE_BUCKET"
+          test -n "$DISTRIBUTION_ID"
+
+          for file in index.html style.css script.js; do
+            test -s "site/$file"
+          done
+
+          test -d site/assets
+          node --check site/script.js
+
+      - name: Authenticate to AWS using OIDC
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_WEBSITE_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: PortfolioWebsite-${{ github.run_id }}
+          allowed-account-ids: "345471468677"
+
+      - name: Create release marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '{"commit":"%s"}\n' "$GITHUB_SHA" > site/release.json
+
+      - name: Publish website to S3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          aws s3 sync site/ "s3://$WEBSITE_BUCKET/" \
+            --delete \
+            --exclude "*.md" \
+            --no-follow-symlinks \
+            --cache-control "public,max-age=300"
+
+      - name: Refresh CloudFront cache
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          invalidation_id=$(aws cloudfront create-invalidation \
+            --distribution-id "$DISTRIBUTION_ID" \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "$DISTRIBUTION_ID" \
+            --id "$invalidation_id"
+
+      - name: Verify published release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for file in index.html style.css script.js release.json; do
+            curl --fail --silent --show-error \
+              --retry 5 --retry-all-errors \
+              --connect-timeout 10 --max-time 30 \
+              "$WEBSITE_URL/$file" \
+              --output "$RUNNER_TEMP/$file"
+
+            cmp "site/$file" "$RUNNER_TEMP/$file"
+          done
+
+          curl --fail --silent --show-error \
+            --retry 5 --retry-all-errors \
+            --connect-timeout 10 --max-time 30 \
+            "$WEBSITE_URL/" \
+            --output "$RUNNER_TEMP/homepage.html"
+
+          cmp site/index.html "$RUNNER_TEMP/homepage.html"
+
+      - name: Write deployment summary
+        shell: bash
+        run: |
+          {
+            echo "### Portfolio deployment verified"
+            echo ""
+            echo "Website: $WEBSITE_URL"
+            echo ""
+            echo "Commit: $GITHUB_SHA"
+            echo ""
+            echo "Published HTML, CSS, JavaScript and release marker match this commit."
+          } >> "$GITHUB_STEP_SUMMARY"
