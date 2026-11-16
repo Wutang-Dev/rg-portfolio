@@ -3,13 +3,11 @@ variable "aws_region" {
   type        = string
   default     = "eu-north-1"
 }
-
 variable "project_name" {
   description = "The name of the project"
   type        = string
   default     = "rg-infrastructure-portfolio"
 }
-
 variable "managed_by" {
   description = "The entity managing the resources"
   type        = string
@@ -21,4 +19,4 @@ variable "purpose" {
   type        = string
   default     = "RemoteState"
 }
-# variable for project
+
