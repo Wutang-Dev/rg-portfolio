@@ -18,3 +18,14 @@ variable "purpose" {
   type        = string
   default     = "PortfolioHosting"
 }
+variable "domain_name" {
+  description = "Existing public Route 53 hosted zone"
+  type        = string
+  default     = "rginfralabs.co.uk"
+}
+
+variable "portfolio_domain_name" {
+  description = "Hostname used for the portfolio website"
+  type        = string
+  default     = "portfolio.rginfralabs.co.uk"
+}

@@ -10,3 +10,7 @@ output "website_bucket_regional_domain_name" {
   description = "Regional domain name of the S3 bucket containing the portfolio website"
   value       = module.s3.bucket_regional_domain_name
 }
+output "acm_certificate_arn" {
+  description = "Validated ACM certificate for the portfolio"
+  value       = module.acm.certificate_arn
+}
